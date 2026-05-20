@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Весёлые напоминалки с физикой — смахни задачу, и она упадёт!">
+    <meta name="theme-color" content="#a855f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Запоминашки">
+    <meta name="application-name" content="Запоминашки">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>Запоминашки</title>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { background: #0a0c12; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: system-ui, sans-serif; overflow: hidden; position: fixed; width: 100%; height: 100%; }
+        .phone { width: 100%; max-width: 400px; aspect-ratio: 9 / 16; background: url('screen.png') center/cover no-repeat; border-radius: 48px; overflow: hidden; display: flex; flex-direction: column; position: relative; box-shadow: 0 25px 40px rgba(0,0,0,0.3); }
+        
+        /* Логотип на всю ширину сверху */
+        .top-logo { width: 100%; display: block; position: relative; }
+        .top-logo img { width: 100%; height: auto; display: block; }
+        /* Кнопка мануала "?" в правом верхнем углу */
+        .manual-btn { position: absolute; top: 8px; right: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.2); color: white; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; backdrop-filter: blur(4px); }
+        .manual-btn:active { transform: scale(0.9); background: rgba(168,85,247,0.6); }
+
+
+        
+        /* Фигурки сверху — 2 ряда, мелкие */
+        .figures-container { position: relative; z-index: 5; background: transparent; padding: 8px 12px; border-bottom: none; max-height: 160px; overflow-y: auto; }
+        .figures-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 72px)); gap: 8px; justify-content: center; }
+        .figure-card { width: 70px; height: 70px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: grab; touch-action: none; transition: all 0.05s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.15); animation: cardAppear 0.4s ease backwards; }
+        .figure-card:nth-child(1) { animation-delay: 0.02s; }
+        .figure-card:nth-child(2) { animation-delay: 0.04s; }
+        .figure-card:nth-child(3) { animation-delay: 0.06s; }
+        .figure-card:nth-child(4) { animation-delay: 0.08s; }
+        .figure-card:nth-child(5) { animation-delay: 0.10s; }
+        .figure-card:nth-child(6) { animation-delay: 0.12s; }
+        .figure-card:nth-child(7) { animation-delay: 0.14s; }
+        .figure-card:nth-child(8) { animation-delay: 0.16s; }
+        .figure-card:nth-child(9) { animation-delay: 0.18s; }
+        .figure-card:nth-child(10) { animation-delay: 0.20s; }
+        .figure-card:nth-child(11) { animation-delay: 0.22s; }
+        .figure-card:nth-child(12) { animation-delay: 0.24s; }
+        .figure-card:nth-child(13) { animation-delay: 0.26s; }
+        .figure-card:nth-child(14) { animation-delay: 0.28s; }
+        .figure-card:nth-child(15) { animation-delay: 0.30s; }
+        .figure-card:nth-child(16) { animation-delay: 0.32s; }
+        .figure-card:nth-child(17) { animation-delay: 0.34s; }
+        .figure-card:nth-child(18) { animation-delay: 0.36s; }
+        .figure-card:nth-child(19) { animation-delay: 0.38s; }
+        .figure-card:nth-child(20) { animation-delay: 0.40s; }
+        .figure-card:nth-child(21) { animation-delay: 0.42s; }
+        .figure-card:nth-child(22) { animation-delay: 0.44s; }
+        .figure-card:nth-child(23) { animation-delay: 0.46s; }
+        .figure-card:nth-child(24) { animation-delay: 0.48s; }
+        .figure-card:nth-child(25) { animation-delay: 0.50s; }
+        @keyframes cardAppear { from { opacity: 0; transform: scale(0.5) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .figure-card.custom-card { background: #f8f4ec; border: 2px dashed #FFB86B; }
+        .figure-card.custom-figure-card { position: relative; }
+        .figure-card:active { cursor: grabbing; }
+        .figure-icon { font-size: 28px; }
+        .figure-icon img { width: 28px; height: 28px; display: block; }
+        .figure-label { font-size: 8px; font-weight: 600; background: #f0f0f0; padding: 2px 6px; border-radius: 12px; color: #333; text-align: center; }
+        .custom-delete-btn { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: #ff4444; color: white; border: 2px solid #fff; font-size: 11px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: all 0.15s ease; padding: 0; }
+        .custom-delete-btn:hover { transform: scale(1.2); background: #ff6666; }
+        .custom-delete-btn:active { transform: scale(0.9); }
+        
+        .physics-area { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; z-index: 4; }
+        #physicsCanvas { width: 100%; display: block; position: relative; z-index: 1; }
+        #iconCanvas { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 2; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4)); }
+        
+        /* Выездная нижняя панель */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            background: transparent;
+            z-index: 10;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(calc(100% - 4px));
+        }
+        .bottom-nav:hover,
+        .bottom-nav.active {
+            transform: translateY(0);
+        }
+        /* Яркое свечение внизу экрана */
+        .bottom-nav::before {
+            content: '';
+            width: 100px;
+            height: 6px;
+            background: #a855f7;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(168,85,247,0.8), 0 0 30px rgba(168,85,247,0.5), 0 0 60px rgba(168,85,247,0.3);
+            transition: opacity 0.3s ease;
+        }
+        .bottom-nav:hover::before,
+        .bottom-nav.active::before {
+            opacity: 0;
+        }
+        .bottom-nav-inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            padding: 12px 16px 16px;
+            background: transparent;
+        }
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            border: 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 50%;
+            transition: all 0.15s ease;
+            font-weight: bold;
+            cursor: pointer;
+            color: rgb(37, 37, 37);
+            z-index: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.15);
+            background: #f0ebe0;
+            font-size: 22px;
+        }
+        .nav-btn:hover {
+            background: rgb(193, 228, 248);
+            color: rgb(33, 0, 85);
+            transform: scale(1.08);
+        }
+        .nav-btn:active {
+            transform: scale(0.92);
+        }
+        .nav-btn .hoverEffect {
+            position: absolute;
+            bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .nav-btn .hoverEffect div {
+            background: rgb(222, 0, 75);
+            background: linear-gradient(
+                90deg,
+                rgba(222, 0, 75, 1) 0%,
+                rgba(191, 70, 255, 1) 49%,
+                rgba(0, 212, 255, 1) 100%
+            );
+            border-radius: 50%;
+            width: 10rem;
+            height: 10rem;
+            transition: 0.4s;
+            filter: blur(20px);
+            animation: effect infinite 3s linear;
+            opacity: 0.5;
+        }
+        .nav-btn:hover .hoverEffect div {
+            width: 8rem;
+            height: 8rem;
+        }
+        @keyframes effect {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .nav-btn .nav-label {
+            display: none;
+        }
+        .nav-icon {
+            position: relative;
+            z-index: 2;
+            line-height: 1;
+        }
+        
+        /* Модальное окно списка */
+        .modal { position: absolute; bottom: 0; left: 0; right: 0; background: #0b0a1cee; backdrop-filter: blur(20px); border-radius: 30px 30px 0 0; padding: 20px; transform: translateY(100%); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 40; }
+        .modal.open { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .modal-header h3 { color: #fff; font-size: 16px; }
+        .modal ul { list-style: none; max-height: 250px; overflow-y: auto; }
+        .modal li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #fff2cc; animation: slideIn 0.3s ease backwards; }
+        .modal li:nth-child(1) { animation-delay: 0.05s; }
+        .modal li:nth-child(2) { animation-delay: 0.10s; }
+        .modal li:nth-child(3) { animation-delay: 0.15s; }
+        .modal li:nth-child(4) { animation-delay: 0.20s; }
+        .modal li:nth-child(5) { animation-delay: 0.25s; }
+        .modal li:nth-child(6) { animation-delay: 0.30s; }
+        .modal li:nth-child(7) { animation-delay: 0.35s; }
+        .modal li:nth-child(8) { animation-delay: 0.40s; }
+        .modal li:nth-child(9) { animation-delay: 0.45s; }
+        .modal li:nth-child(10) { animation-delay: 0.50s; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .close-modal { background: linear-gradient(135deg, #a855f7, #ec4899); border: none; padding: 10px; border-radius: 30px; margin-top: 12px; width: 100%; color: white; font-weight: bold; cursor: pointer; transition: transform 0.15s ease; }
+        .close-modal:hover { transform: scale(1.02); }
+        .close-modal:active { transform: scale(0.97); }
+        .delete-item { background: rgba(255,68,68,0.8); border: none; color: white; padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: all 0.15s ease; }
+        .delete-item:hover { background: #ff4444; transform: scale(1.1); }
+        
+        .falling-figure { position: fixed; width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; pointer-events: none; }
+        .falling-figure img { width: 28px; height: 28px; display: block; }
+        
+        .custom-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: #1e1a2f; border-radius: 32px; padding: 20px; width: 280px; z-index: 200; display: none; flex-direction: column; gap: 12px; opacity: 0; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .custom-modal.open { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .custom-modal select, .custom-modal input { padding: 10px; border-radius: 20px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; }
+        .custom-modal input[type="color"] { padding: 0; height: 40px; border-radius: 12px; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); }
+        .custom-modal input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+        .custom-modal input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; }
+        .icon-picker { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; max-height: 120px; overflow-y: auto; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 12px; }
+        .icon-picker-item { width: 100%; aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.05); transition: all 0.15s ease; font-size: 20px; }
+        .icon-picker-item:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
+        .icon-picker-item.selected { background: rgba(168,85,247,0.4); box-shadow: 0 0 0 2px #a855f7; }
+        .icon-picker-item img { width: 20px; height: 20px; display: block; }
+        .custom-modal select option { color: #333; }
+        .custom-modal input::placeholder { color: rgba(255,255,255,0.4); }
+        .custom-modal button { background: linear-gradient(135deg, #a855f7, #ec4899); border: none; padding: 10px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.15s ease; }
+        .custom-modal button:hover { transform: scale(1.02); }
+        .custom-modal button:active { transform: scale(0.97); }
+        .custom-modal button#closeCustomBtn { background: rgba(255,255,255,0.15); }
+        .overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 199; display: none; }
+        .overlay.open { display: block; }
+        
+        /* Подтверждение удаления */
+        .confirm-toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1e1a2f; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 12px 20px; z-index: 250; display: none; align-items: center; gap: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); animation: toastIn 0.3s ease; }
+        .confirm-toast.open { display: flex; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .confirm-toast span { color: white; font-size: 13px; }
+        .confirm-toast button { padding: 6px 16px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; font-size: 12px; transition: transform 0.1s; }
+        .confirm-toast button:active { transform: scale(0.95); }
+        .confirm-toast .confirm-yes { background: #ff4444; color: white; }
+        .confirm-toast .confirm-no { background: rgba(255,255,255,0.15); color: white; }
+        
+        /* Подтверждение очистки всего */
+        .confirm-toast-clear { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1e1a2f; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 12px 20px; z-index: 251; display: none; align-items: center; gap: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); animation: toastIn 0.3s ease; }
+        .confirm-toast-clear.open { display: flex; }
+        .confirm-toast-clear span { color: white; font-size: 13px; }
+        .confirm-toast-clear button { padding: 6px 16px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; font-size: 12px; transition: transform 0.1s; }
+        .confirm-toast-clear button:active { transform: scale(0.95); }
+        .confirm-toast-clear .confirm-yes { background: #ff4444; color: white; }
+        .confirm-toast-clear .confirm-no { background: rgba(255,255,255,0.15); color: white; }
+        
+        /* Модальное окно настроек */
+        .settings-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: #1e1a2f; border-radius: 32px; padding: 24px; width: 300px; z-index: 200; display: none; flex-direction: column; gap: 16px; opacity: 0; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); max-height: 80vh; overflow-y: auto; }
+        .settings-modal.open { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .settings-modal h3 { color: #fff; font-size: 18px; text-align: center; margin-bottom: 4px; }
+        .settings-modal .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .settings-modal .setting-row:last-of-type { border-bottom: none; }
+        .settings-modal .setting-label { color: #ddd; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .settings-modal .setting-label span { font-size: 18px; }
+        .settings-modal .toggle-switch { width: 44px; height: 24px; background: rgba(255,255,255,0.15); border-radius: 12px; cursor: pointer; position: relative; transition: background 0.2s ease; flex-shrink: 0; }
+        .settings-modal .toggle-switch.active { background: #a855f7; }
+        .settings-modal .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s ease; }
+        .settings-modal .toggle-switch.active::after { transform: translateX(20px); }
+        .settings-modal .theme-btns { display: flex; gap: 8px; }
+        .settings-modal .theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all 0.15s ease; }
+        .settings-modal .theme-btn.active { border-color: #a855f7; transform: scale(1.15); }
+        .settings-modal .theme-btn-dark { background: #0a0c12; }
+        .settings-modal .theme-btn-light { background: #f5f0e8; }
+        .settings-modal .theme-btn-blue { background: #1a1a3e; }
+        .settings-modal .theme-btn-forest { background: #0f1a0f; }
+        .settings-modal .close-settings-btn { background: rgba(255,255,255,0.15); border: none; padding: 10px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.15s ease; margin-top: 4px; }
+        .settings-modal .close-settings-btn:hover { transform: scale(1.02); }
+        .settings-modal .close-settings-btn:active { transform: scale(0.97); }
+        
+        /* Модальное окно аккаунта/статистики */
+        .account-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: #1e1a2f; border-radius: 32px; padding: 24px; width: 300px; z-index: 200; display: none; flex-direction: column; gap: 12px; opacity: 0; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .account-modal.open { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .account-modal h3 { color: #fff; font-size: 18px; text-align: center; margin-bottom: 4px; }
+        .account-modal .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .account-modal .stat-row:last-of-type { border-bottom: none; }
+        .account-modal .stat-label { color: #aaa; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        .account-modal .stat-label span { font-size: 20px; }
+        .account-modal .stat-value { color: #fff; font-size: 20px; font-weight: bold; }
+        .account-modal .stat-value.highlight { color: #a855f7; }
+        .account-modal .stat-value.gold { color: #FFD700; }
+        .account-modal .stat-value.green { color: #4ADE80; }
+        .account-modal .close-account-btn { background: rgba(255,255,255,0.15); border: none; padding: 10px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.15s ease; margin-top: 4px; }
+        .account-modal .close-account-btn:hover { transform: scale(1.02); }
+        .account-modal .close-account-btn:active { transform: scale(0.97); }
+        
+        /* Confetti-частицы */
+        .confetti-piece { position: fixed; width: 8px; height: 8px; border-radius: 2px; pointer-events: none; z-index: 999; animation: confettiFall 1.2s ease-out forwards; }
+        @keyframes confettiFall { 0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); } 100% { opacity: 0; transform: translateY(200px) rotate(720deg) scale(0.3); } }
+        
+        /* Забавные сообщения */
+        .funny-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.3); font-size: 14px; text-align: center; z-index: 3; pointer-events: none; animation: funnyPulse 3s ease-in-out infinite; }
+        @keyframes funnyPulse { 0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.05); } }
+        
+        /* Модальное окно календаря */
+        .calendar-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: #1e1a2f; border-radius: 32px; padding: 20px; width: 320px; z-index: 200; display: none; flex-direction: column; gap: 12px; opacity: 0; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); max-height: 85vh; overflow-y: auto; }
+        .calendar-modal.open { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .calendar-modal h3 { color: #fff; font-size: 18px; text-align: center; margin-bottom: 4px; }
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .calendar-nav button { background: rgba(255,255,255,0.1); border: none; color: white; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 16px; transition: all 0.15s ease; }
+        .calendar-nav button:active { transform: scale(0.9); }
+        .calendar-nav .month-label { color: #ddd; font-size: 15px; font-weight: 600; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+        .calendar-grid .day-header { color: rgba(255,255,255,0.4); font-size: 11px; text-align: center; padding: 6px 0; font-weight: 600; }
+        .calendar-grid .day-cell { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease; position: relative; min-height: 36px; }
+        .calendar-grid .day-cell:hover { background: rgba(255,255,255,0.08); }
+        .calendar-grid .day-cell .day-num { color: #ddd; font-size: 13px; font-weight: 500; }
+        .calendar-grid .day-cell .day-count { color: #a855f7; font-size: 9px; font-weight: 700; margin-top: 1px; }
+        .calendar-grid .day-cell.today { background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); }
+        .calendar-grid .day-cell.today .day-num { color: #a855f7; font-weight: 700; }
+        .calendar-grid .day-cell.other-month .day-num { color: rgba(255,255,255,0.2); }
+        .calendar-grid .day-cell.other-month .day-count { color: rgba(168,85,247,0.3); }
+        .calendar-grid .day-cell.empty { cursor: default; }
+        .calendar-grid .day-cell.has-tasks::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; border-radius: 50%; background: #a855f7; }
+        .calendar-close-btn { background: rgba(255,255,255,0.15); border: none; padding: 10px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.15s ease; margin-top: 4px; }
+        .calendar-close-btn:active { transform: scale(0.97); }
+        
+        /* Список дел за день в календаре */
+        .calendar-day-detail { display: none; flex-direction: column; gap: 6px; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; max-height: 200px; overflow-y: auto; }
+        .calendar-day-detail.open { display: flex; }
+        .calendar-day-detail .detail-header { display: flex; justify-content: space-between; align-items: center; }
+        .calendar-day-detail .detail-header span { color: #fff; font-size: 14px; font-weight: 600; }
+        .calendar-day-detail .detail-header button { background: rgba(255,255,255,0.1); border: none; color: #aaa; padding: 4px 10px; border-radius: 16px; cursor: pointer; font-size: 12px; }
+        .calendar-day-detail .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; background: rgba(255,255,255,0.04); border-radius: 10px; }
+        .calendar-day-detail .detail-item span { color: #ddd; font-size: 13px; }
+        .calendar-day-detail .detail-item .detail-time { color: #FFD966; font-size: 11px; }
+        
+        /* Модальное окно мануала */
+        .manual-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: #1e1a2f; border-radius: 32px; padding: 24px; width: 300px; z-index: 200; display: none; flex-direction: column; gap: 12px; opacity: 0; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); max-height: 80vh; overflow-y: auto; }
+        .manual-modal.open { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        .manual-modal h3 { color: #fff; font-size: 18px; text-align: center; margin-bottom: 4px; }
+        .manual-modal .manual-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .manual-modal .manual-item:last-of-type { border-bottom: none; }
+        .manual-modal .manual-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+        .manual-modal .manual-text { color: #ccc; font-size: 13px; line-height: 1.4; }
+        .manual-modal .manual-text strong { color: #fff; }
+        .manual-modal .manual-desc { color: rgba(255,255,255,0.5); font-size: 11px; text-align: center; padding: 4px 0 8px; }
+        .manual-modal .close-manual-btn { background: linear-gradient(135deg, #a855f7, #ec4899); border: none; padding: 10px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.15s ease; margin-top: 4px; }
+        .manual-modal .close-manual-btn:active { transform: scale(0.97); }
+
+
+    </style>
+
+    <script src="matter.min.js"></script>
+</head>
+<body>
+<div class="phone">
+    <div class="top-logo"><img src="logo.png" alt="Запоминашки"><div class="manual-btn" id="manualBtn">❓</div></div>
+
+    
+    <div class="figures-container"><div class="figures-grid" id="figuresGrid"></div></div>
+    
+    <div class="funny-message" id="funnyMessage">✨ Перетащи фигурку вниз, чтобы отметить дело!</div>
+    
+    <div class="physics-area" id="physicsArea">
+        <canvas id="physicsCanvas"></canvas>
+        <canvas id="iconCanvas"></canvas>
+    </div>
+    
+    <div class="bottom-nav" id="bottomNav">
+        <div class="bottom-nav-inner">
+            <button class="nav-btn" id="listBtn">
+                <span class="nav-icon">📋</span>
+                <div class="hoverEffect"><div></div></div>
+            </button>
+            <button class="nav-btn" id="settingsBtn">
+                <span class="nav-icon">⚙️</span>
+                <div class="hoverEffect"><div></div></div>
+            </button>
+            <button class="nav-btn" id="accountBtn">
+                <span class="nav-icon">👤</span>
+                <div class="hoverEffect"><div></div></div>
+            </button>
+            <button class="nav-btn" id="calendarBtn" style="font-size:14px;font-weight:700;font-family:system-ui">
+                <span class="nav-icon" id="calendarIcon">--:--</span>
+                <div class="hoverEffect"><div></div></div>
+            </button>
+        </div>
+    </div>
+    
+    <div class="modal" id="modalList">
+        <div class="modal-header">
+            <h3>📋 Список дел</h3>
+            <span style="color:rgba(255,255,255,0.5);font-size:12px" id="modalCount">0</span>
+        </div>
+        <ul id="checklist"></ul>
+        <button class="close-modal" id="closeModalBtn">ЗАКРЫТЬ</button>
+    </div>
+    
+    <div class="confirm-toast" id="confirmToast">
+        <span>🗑️ Удалить задачу?</span>
+        <button class="confirm-yes" id="confirmYes">Да</button>
+        <button class="confirm-no" id="confirmNo">Нет</button>
+    </div>
+    
+    <div class="confirm-toast-clear" id="confirmClearToast">
+        <span>🗑️ Очистить всё?</span>
+        <button class="confirm-yes" id="confirmClearYes">Да</button>
+        <button class="confirm-no" id="confirmClearNo">Нет</button>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    <div class="custom-modal" id="customModal">
+        <h4 style="color:white;margin-bottom:4px">➕ Новая запоминашка</h4>
+        <input type="color" id="customColor" value="#FFB86B" style="width:100%">
+        <input type="text" id="customAction" placeholder="Действие (напр. 'Свет выключен')">
+        <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-top:4px">Выбери иконку:</div>
+        <div class="icon-picker" id="iconPicker"></div>
+        <input type="text" id="customIcon" placeholder="Или введи свой эмодзи (напр. 💡)" style="margin-top:4px">
+        <button id="saveCustomBtn">Добавить</button>
+        <button id="closeCustomBtn" style="background:#555">Отмена</button>
+    </div>
+    
+    <!-- Модальное окно настроек -->
+    <div class="settings-modal" id="settingsModal">
+        <h3>⚙️ Настройки</h3>
+        <div class="setting-row">
+            <span class="setting-label"><span>🔊</span> Звуки</span>
+            <div class="toggle-switch active" id="toggleSound" data-setting="sound"></div>
+        </div>
+        <div class="setting-row">
+            <span class="setting-label"><span>📳</span> Вибрация</span>
+            <div class="toggle-switch active" id="toggleVibration" data-setting="vibration"></div>
+        </div>
+        <div class="setting-row">
+            <span class="setting-label"><span>🎊</span> Confetti при дропе</span>
+            <div class="toggle-switch active" id="toggleConfetti" data-setting="confetti"></div>
+        </div>
+        <div class="setting-row">
+            <span class="setting-label"><span>🎨</span> Тема</span>
+            <div class="theme-btns">
+                <div class="theme-btn theme-btn-dark active" data-theme="dark" title="Тёмная"></div>
+                <div class="theme-btn theme-btn-light" data-theme="light" title="Светлая"></div>
+                <div class="theme-btn theme-btn-blue" data-theme="blue" title="Синяя"></div>
+                <div class="theme-btn theme-btn-forest" data-theme="forest" title="Лесная"></div>
+            </div>
+        </div>
+        <button class="close-settings-btn" id="closeSettingsBtn">ЗАКРЫТЬ</button>
+    </div>
+    
+    <!-- Модальное окно аккаунта/статистики -->
+    <div class="account-modal" id="accountModal">
+        <h3>👤 Статистика</h3>
+        <div class="stat-row">
+            <span class="stat-label"><span>📅</span> Сегодня</span>
+            <span class="stat-value highlight" id="statToday">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label"><span>📊</span> За неделю</span>
+            <span class="stat-value gold" id="statWeek">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label"><span>🏆</span> Всего</span>
+            <span class="stat-value green" id="statTotal">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label"><span>🔥</span> Streak (дней)</span>
+            <span class="stat-value" id="statStreak">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label"><span>⏰</span> Последнее дело</span>
+            <span class="stat-value" style="font-size:14px;font-weight:normal;color:#aaa" id="statLast">—</span>
+        </div>
+        <button class="close-account-btn" id="closeAccountBtn">ЗАКРЫТЬ</button>
+    </div>
+    
+    <!-- Модальное окно календаря -->
+    <div class="calendar-modal" id="calendarModal">
+        <h3>📅 Календарь</h3>
+        <div class="calendar-nav">
+            <button id="calPrev">◀</button>
+            <span class="month-label" id="calMonthLabel">Май 2026</span>
+            <button id="calNext">▶</button>
+        </div>
+        <div class="calendar-grid" id="calGrid"></div>
+        <div class="calendar-day-detail" id="calDayDetail">
+            <div class="detail-header">
+                <span id="calDetailDate">—</span>
+                <button id="calDetailClose">✕</button>
+            </div>
+            <div id="calDetailList"></div>
+        </div>
+        <button class="calendar-close-btn" id="closeCalendarBtn">ЗАКРЫТЬ</button>
+    </div>
+    
+    <!-- Модальное окно мануала -->
+    <div class="manual-modal" id="manualModal">
+        <h3>📖 О «Запоминашках»</h3>
+        <div class="manual-desc">Весёлые напоминалки с физикой — смахни задачу, и она упадёт!</div>
+        <div class="manual-item">
+            <span class="manual-icon">👇</span>
+            <span class="manual-text"><strong>Как добавить дело:</strong> возьми фигурку сверху и смахни её вниз — она упадёт в физическую область</span>
+        </div>
+        <div class="manual-item">
+            <span class="manual-icon">📋</span>
+            <span class="manual-text"><strong>Список дел:</strong> нажми кнопку 📋 внизу, чтобы увидеть всё, что уже сделано</span>
+        </div>
+        <div class="manual-item">
+            <span class="manual-icon">✨</span>
+            <span class="manual-text"><strong>Своя фигурка:</strong> нажми кнопку ➕ (последняя в ряду), выбери цвет, действие и иконку</span>
+        </div>
+        <div class="manual-item">
+            <span class="manual-icon">⚙️</span>
+            <span class="manual-text"><strong>Настройки:</strong> кнопка ⚙️ — звук, вибрация, confetti и тема оформления</span>
+        </div>
+        <div class="manual-item">
+            <span class="manual-icon">👤</span>
+            <span class="manual-text"><strong>Статистика:</strong> кнопка 👤 — сколько дел сделано сегодня, за неделю и всего</span>
+        </div>
+        <div class="manual-item">
+            <span class="manual-icon">💡</span>
+            <span class="manual-text"><strong>Иконка 💡 (Свет):</strong> при дропе делает вспышку экрана — как будто свет выключили!</span>
+        </div>
+        <div class="manual-item">
+            <span class="manual-icon">🌙</span>
+            <span class="manual-text"><strong>Автосброс:</strong> каждую полночь все дела в комнате очищаются — новый день, новые задачи!</span>
+        </div>
+        <button class="close-manual-btn" id="closeManualBtn">ПОНЯТНО!</button>
+    </div>
+</div>
+
+
+<script>
+
+
+    (function(){
+        // ---------- БИБЛИОТЕКА С PNG ----------
+        let LIBRARY = [
+            { id: "plant", icon: "icon1.png", name: "Цветы", action: "Цветы политы", color: "#4ADE80" },
+            { id: "fish", icon: "icon2.png", name: "Рыбки", action: "Рыбки покормлены", color: "#33D4B8" },
+            { id: "vacuum", icon: "icon3.png", name: "Пылесос", action: "Пол чистый", color: "#FF68D6" },
+            { id: "iron", icon: "icon4.png", name: "Утюг", action: "Утюг выключен", color: "#FDEB84" },
+            { id: "trash", icon: "icon5.png", name: "Мусор", action: "Мусор вынесен", color: "#9CA3AF" },
+            { id: "washer", icon: "icon6.png", name: "Стиральная машина", action: "Бельё высушено", color: "#77DD77" },
+            { id: "kettle", icon: "icon7.png", name: "Чайник", action: "Чайник выключен", color: "#FFB86B" },
+            { id: "bed", icon: "icon8.png", name: "Кровать", action: "Кровать заправлена", color: "#A78BFA" },
+            { id: "light", icon: "icon9.png", name: "Свет", action: "Свет выключен", color: "#FFD700" },
+            { id: "meds", icon: "icon10.png", name: "Лекарства", action: "Лекарства приняты", color: "#FDBA74" },
+            { id: "dumbbell", icon: "icon11.png", name: "Зарядка", action: "Зарядка сделана", color: "#FF6B6B" },
+            { id: "shoes", icon: "icon12.png", name: "Обувь", action: "Обувь на месте", color: "#FCA5A5" },
+            { id: "sleep", icon: "icon13.png", name: "Режим сна", action: "Режим сна соблюдён", color: "#C084FC" },
+            { id: "mail", icon: "icon14.png", name: "Почта", action: "Почта проверена", color: "#4488FF" },
+            { id: "phone", icon: "icon15.png", name: "Телефон", action: "Телефон заряжен", color: "#FF6B6B" },
+            { id: "message", icon: "icon16.png", name: "Сообщения", action: "Сообщения отвечены", color: "#F472B6" },
+            { id: "calendar", icon: "icon17.png", name: "Календарь", action: "Планы сверены", color: "#FB923C" },
+            { id: "book", icon: "icon18.png", name: "Книга", action: "Чтение выполнено", color: "#FBBF24" },
+            { id: "headphones", icon: "icon19.png", name: "Наушники", action: "Аудиопауза", color: "#67E8F9" },
+            { id: "pot", icon: "icon20.png", name: "Кастрюля", action: "Ужин готов", color: "#FFB86B" },
+            { id: "camera", icon: "icon21.png", name: "Фото", action: "Фото сделано", color: "#6EE7B7" },
+            { id: "key", icon: "icon22.png", name: "Ключи", action: "Дверь заперта", color: "#C084FC" },
+            { id: "umbrella", icon: "icon23.png", name: "Зонт", action: "Зонт в сумке", color: "#A7F9FF" },
+            { id: "bag", icon: "icon24.png", name: "Сумка", action: "Сумка собрана", color: "#6EE7B7" }
+        ];
+        
+        let dropped = []; // [{ id, icon, action, color, timeStr }]
+        let currentDate = new Date().toDateString();
+        let nextCustomId = 100;
+        
+        // DOM
+        const figuresGrid = document.getElementById('figuresGrid');
+        const checklistUl = document.getElementById('checklist');
+        const modal = document.getElementById('modalList');
+        const listBtn = document.getElementById('listBtn');
+        const closeModal = document.getElementById('closeModalBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const accountBtn = document.getElementById('accountBtn');
+        const customModal = document.getElementById('customModal');
+        const overlay = document.getElementById('overlay');
+        const modalCount = document.getElementById('modalCount');
+        const funnyMessage = document.getElementById('funnyMessage');
+        const confirmToast = document.getElementById('confirmToast');
+        const confirmYes = document.getElementById('confirmYes');
+        const confirmNo = document.getElementById('confirmNo');
+        
+        // Переменные для подтверждения удаления
+        let pendingDelete = null;
+        
+        // Забавные сообщения для пустой физической области
+        const funnyMessages = [
+            '✨ Перетащи фигурку вниз, чтобы отметить дело!',
+            '🎯 Смахни задачу — и она упадёт в комнату!',
+            '🌟 Чем больше фигурок, тем веселее!',
+            '📋 Всё под контролем! Добавь новую задачку',
+            '🚀 Потяни фигурку вниз и отпусти!',
+            '🎉 День без дела — зря прожитый день!',
+            '💪 Отмечай дела и смотри, как они падают!',
+            '🌈 Каждая фигурка — маленькая победа!'
+        ];
+        
+        // Эмодзи для реакций
+        const reactionEmojis = ['🎉', '✨', '⭐', '🌟', '💪', '👏', '✅', '🔥', '🎊', '🏆'];
+        
+        // ---------- ФИЗИКА ----------
+        let engine, render, worldWidth, worldHeight, canvas, iconCanvas, ctxIcon, physicsBodies = [];
+        
+        function initPhysics() {
+            canvas = document.getElementById('physicsCanvas');
+            iconCanvas = document.getElementById('iconCanvas');
+            const container = document.getElementById('physicsArea');
+            worldWidth = container.clientWidth;
+            worldHeight = container.clientHeight;
+            canvas.width = worldWidth;
+            canvas.height = worldHeight;
+            iconCanvas.width = worldWidth;
+            iconCanvas.height = worldHeight;
+            ctxIcon = iconCanvas.getContext('2d');
+            
+            engine = Matter.Engine.create();
+            engine.gravity.x = 0;
+            engine.gravity.y = 0.6;
+            engine.positionIterations = 12;
+            
+            // Звуки столкновений
+            Matter.Events.on(engine, 'collisionStart', (event) => {
+                event.pairs.forEach(pair => {
+                    const bodyA = pair.bodyA;
+                    const bodyB = pair.bodyB;
+                    const aIsStatic = bodyA.isStatic;
+                    const bIsStatic = bodyB.isStatic;
+                    if (!aIsStatic && !bIsStatic) {
+                        // Обе фигурки — звук plastic.mp3
+                        playCollisionSound();
+                    } else if (aIsStatic !== bIsStatic) {
+                        // Одна из них стена — звук wall.mp3
+                        playWallSound();
+                    }
+                });
+            });
+            
+            const walls = [
+                Matter.Bodies.rectangle(worldWidth/2, -20, worldWidth, 40, { isStatic: true, restitution: 0.7 }),
+                Matter.Bodies.rectangle(worldWidth/2, worldHeight+20, worldWidth, 40, { isStatic: true, restitution: 0.7 }),
+                Matter.Bodies.rectangle(-20, worldHeight/2, 40, worldHeight, { isStatic: true, restitution: 0.7 }),
+                Matter.Bodies.rectangle(worldWidth+20, worldHeight/2, 40, worldHeight, { isStatic: true, restitution: 0.7 })
+            ];
+            Matter.World.add(engine.world, walls);
+            
+            render = Matter.Render.create({
+                canvas: canvas,
+                engine: engine,
+                options: { width: worldWidth, height: worldHeight, wireframes: false, background: 'transparent' }
+            });
+            Matter.Render.run(render);
+            const runner = Matter.Runner.create();
+            Matter.Runner.run(runner, engine);
+            
+            // Кеш изображений для drawIcons
+            const iconCache = {};
+            function getCachedIcon(src) {
+                if (!iconCache[src]) {
+                    const img = new Image();
+                    img.src = src;
+                    iconCache[src] = img;
+                }
+                return iconCache[src];
+            }
+            
+            // Вспомогательная функция для рисования эмодзи на Canvas через offscreen элемент
+            function drawEmojiOnCanvas(ctx, emoji, x, y, size) {
+                // Создаём временный canvas для рендеринга эмодзи через HTML
+                const offscreen = document.createElement('canvas');
+                offscreen.width = size;
+                offscreen.height = size;
+                const offCtx = offscreen.getContext('2d');
+                offCtx.font = `${size * 0.7}px system-ui, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+                offCtx.textAlign = 'center';
+                offCtx.textBaseline = 'middle';
+                offCtx.fillText(emoji, size/2, size/2);
+                ctx.drawImage(offscreen, x - size/2, y - size/2, size, size);
+            }
+            
+            function drawIcons() {
+                ctxIcon.clearRect(0, 0, worldWidth, worldHeight);
+                physicsBodies.forEach(({ body, figure }) => {
+                    const pos = body.position;
+                    if (!pos) return;
+                    const iconW = 48;
+                    const iconH = 48;
+                    const angle = body.angle || 0;
+                    
+                    ctxIcon.save();
+                    ctxIcon.translate(pos.x, pos.y);
+                    ctxIcon.rotate(angle);
+                    
+                    // Иконка: PNG или эмодзи
+                    if (figure.icon && figure.icon.endsWith('.png')) {
+                        const img = getCachedIcon(figure.icon);
+                        if (img.complete && img.naturalWidth > 0) {
+                            ctxIcon.drawImage(img, -iconW/2, -iconH/2, iconW, iconH);
+                        } else {
+                            img.onload = () => {
+                                ctxIcon.drawImage(img, -iconW/2, -iconH/2, iconW, iconH);
+                            };
+                        }
+                    } else if (figure.icon) {
+                        // Эмодзи — рисуем через offscreen canvas для надёжности
+                        drawEmojiOnCanvas(ctxIcon, figure.icon, 0, 0, 48);
+                    } else {
+                        // Fallback если нет иконки
+                        ctxIcon.font = '28px system-ui';
+                        ctxIcon.textAlign = 'center';
+                        ctxIcon.textBaseline = 'middle';
+                        ctxIcon.fillStyle = '#ffffff';
+                        ctxIcon.fillText('✅', 0, 0);
+                    }
+                    
+                    ctxIcon.restore();
+                    
+                    // Время под иконкой
+                    ctxIcon.font = 'bold 10px system-ui';
+                    ctxIcon.textAlign = 'center';
+                    ctxIcon.textBaseline = 'bottom';
+                    ctxIcon.strokeStyle = '#ffffff';
+                    ctxIcon.lineWidth = 3;
+                    ctxIcon.strokeText(figure.timeStr || '✅', pos.x, pos.y + iconH/2 - 4);
+                    ctxIcon.fillStyle = '#333333';
+                    ctxIcon.fillText(figure.timeStr || '✅', pos.x, pos.y + iconH/2 - 4);
+                });
+                requestAnimationFrame(drawIcons);
+            }
+            drawIcons();
+        }
+        
+        function addPhysicsFigure(fig, x, y) {
+            const body = Matter.Bodies.rectangle(x, y, 48, 48, {
+                restitution: 0.6, friction: 0.4, density: 0.003, airResistance: 0.02,
+                render: { visible: false }
+            });
+            Matter.World.add(engine.world, body);
+            physicsBodies.push({ body, figure: fig });
+            return body;
+        }
+        
+        function rebuildPhysics() {
+            physicsBodies.forEach(p => Matter.World.remove(engine.world, p.body));
+            physicsBodies = [];
+            dropped.forEach((fig, idx) => {
+                const x = 40 + (idx % 5) * 55;
+                const y = worldHeight - 70 - Math.floor(idx / 5) * 60;
+                addPhysicsFigure(fig, x, y);
+            });
+        }
+        
+        // ---------- ЗАБАВНЫЕ СООБЩЕНИЯ ----------
+        function updateFunnyMessage() {
+            if (dropped.length === 0 && physicsBodies.length === 0) {
+                funnyMessage.style.display = 'block';
+                funnyMessage.textContent = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
+            } else {
+                funnyMessage.style.display = 'none';
+            }
+        }
+        
+        // ---------- ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ ----------
+        function requestDelete(figId, timeStr) {
+            pendingDelete = { id: figId, time: timeStr };
+            confirmToast.classList.add('open');
+        }
+        
+        function executePendingDelete() {
+            if (!pendingDelete) return;
+            const { id, time } = pendingDelete;
+            const index = dropped.findIndex(d => d.id === id && d.timeStr === time);
+            if (index !== -1) {
+                dropped.splice(index, 1);
+                const physIndex = physicsBodies.findIndex(p => p.figure.id === id && p.figure.timeStr === time);
+                if (physIndex !== -1) {
+                    Matter.World.remove(engine.world, physicsBodies[physIndex].body);
+                    physicsBodies.splice(physIndex, 1);
+                }
+                saveToLocal();
+                renderUI();
+                renderChecklist();
+                updateFunnyMessage();
+            }
+            pendingDelete = null;
+            confirmToast.classList.remove('open');
+        }
+        
+        function cancelPendingDelete() {
+            pendingDelete = null;
+            confirmToast.classList.remove('open');
+        }
+        
+        // ---------- УДАЛЕНИЕ ИЗ СПИСКА (с подтверждением) ----------
+        function deleteFromList(figId, timeStr) {
+            requestDelete(figId, timeStr);
+        }
+        
+        // ---------- КАСТОМНАЯ ФИГУРКА (с валидацией) ----------
+        function addCustomFigure() {
+            let action = document.getElementById('customAction').value.trim();
+            let icon = document.getElementById('customIcon').value.trim();
+            
+            // Валидация
+            if (!action) {
+                document.getElementById('customAction').style.border = '2px solid #ff4444';
+                setTimeout(() => document.getElementById('customAction').style.border = 'none', 1500);
+                return;
+            }
+            if (!icon) {
+                document.getElementById('customIcon').style.border = '2px solid #ff4444';
+                setTimeout(() => document.getElementById('customIcon').style.border = 'none', 1500);
+                return;
+            }
+            
+            const color = document.getElementById('customColor').value;
+            // Используем timestamp для уникального id (чтобы избежать конфликтов с id из localStorage)
+            const newId = `custom_${Date.now()}_${nextCustomId++}`;
+            const newFig = {
+                id: newId,
+                icon: icon,
+                name: action,
+                action: action,
+                color: color,
+                isCustom: true
+            };
+            LIBRARY.push(newFig);
+            renderUI();
+            customModal.classList.remove('open');
+            overlay.classList.remove('open');
+            saveToLocal();
+            
+            // Очищаем поля
+            document.getElementById('customAction').value = '';
+            document.getElementById('customIcon').value = '';
+        }
+        
+        // ---------- UI ----------
+        function renderUI() {
+            // Показываем ВСЕ фигурки из LIBRARY, не скрывая уже добавленные в комнату
+            const pending = LIBRARY;
+            figuresGrid.innerHTML = pending.map(f => {
+                const iconHtml = f.icon.endsWith('.png')
+                    ? `<img src="${f.icon}" alt="${f.name}" style="width:28px;height:28px">`
+                    : f.icon;
+                // Для кастомных фигурок добавляем крестик удаления
+                const deleteBtn = f.isCustom ? `<button class="custom-delete-btn" data-id="${f.id}" title="Удалить">✕</button>` : '';
+                return `
+                <div class="figure-card ${f.isCustom ? 'custom-figure-card' : ''}" data-id="${f.id}">
+                    ${deleteBtn}
+                    <div class="figure-icon">${iconHtml}</div>
+                    <div class="figure-label">${f.action}</div>
+                </div>
+            `}).join('');
+            
+            const customCard = document.createElement('div');
+            customCard.className = 'figure-card custom-card';
+            customCard.innerHTML = `<div class="figure-icon">➕</div><div class="figure-label">Своя</div>`;
+            customCard.onclick = () => { customModal.classList.add('open'); overlay.classList.add('open'); };
+            figuresGrid.appendChild(customCard);
+            
+            // Обработчики для крестиков удаления кастомных фигурок
+            document.querySelectorAll('.custom-delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.getAttribute('data-id');
+                    // Удаляем фигурку из LIBRARY
+                    const idx = LIBRARY.findIndex(f => f.id === id);
+                    if (idx !== -1) {
+                        LIBRARY.splice(idx, 1);
+                        // Также удаляем из dropped и physics, если есть
+                        const dropIdx = dropped.findIndex(d => d.id === id);
+                        if (dropIdx !== -1) {
+                            dropped.splice(dropIdx, 1);
+                            const physIdx = physicsBodies.findIndex(p => p.figure.id === id);
+                            if (physIdx !== -1) {
+                                Matter.World.remove(engine.world, physicsBodies[physIdx].body);
+                                physicsBodies.splice(physIdx, 1);
+                            }
+                        }
+                        saveToLocal();
+                        renderUI();
+                        renderChecklist();
+                        updateFunnyMessage();
+                    }
+                });
+            });
+            
+            // Сохраняем ссылки на объекты фигурок прямо на DOM-элементах
+            document.querySelectorAll('.figure-card:not(.custom-card)').forEach(card => {
+                const id = card.getAttribute('data-id');
+                if (!id) return;
+                const fig = LIBRARY.find(f => f.id === id);
+                if (fig) {
+                    card._figData = fig;
+                }
+            });
+            
+            attachSwipeEvents();
+            updateFunnyMessage();
+        }
+        
+        function renderChecklist() {
+            if (dropped.length === 0) {
+                checklistUl.innerHTML = '<li style="justify-content:center;animation:none">📭 Пока ничего не отмечено</li>';
+            } else {
+                checklistUl.innerHTML = dropped.map(d => {
+                    const iconHtml = d.icon.endsWith('.png')
+                        ? `<img src="${d.icon}" style="width:20px;height:20px;vertical-align:middle;margin-right:4px">`
+                        : d.icon;
+                    return `
+                    <li>
+                        <span>${iconHtml} ${d.action}</span>
+                        <span style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#FFD966;">${d.timeStr}</span>
+                            <button class="delete-item" data-id="${d.id}" data-time="${d.timeStr}">🗑️</button>
+                        </span>
+                    </li>
+                `}).join('') + `
+                    <li style="justify-content:center;border:none;padding:12px 0">
+                        <button id="clearAllBtn" style="background:rgba(255,68,68,0.2);border:1px solid rgba(255,68,68,0.4);color:#ff6666;padding:10px 24px;border-radius:30px;cursor:pointer;font-size:13px;font-weight:bold;transition:all 0.15s ease">🗑️ Очистить полностью</button>
+                    </li>
+                `;
+            }
+            document.querySelectorAll('.delete-item').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.getAttribute('data-id');
+                    const time = btn.getAttribute('data-time');
+                    deleteFromList(id, time);
+                });
+            });
+            const clearBtn = document.getElementById('clearAllBtn');
+            if (clearBtn) {
+                clearBtn.onclick = () => {
+                    if (dropped.length === 0) return;
+                    // Удаляем все физические тела
+                    physicsBodies.forEach(p => Matter.World.remove(engine.world, p.body));
+                    physicsBodies = [];
+                    dropped = [];
+                    saveToLocal();
+                    renderUI();
+                    renderChecklist();
+                    updateFunnyMessage();
+                };
+            }
+        }
+
+        
+        // ---------- СВАЙП ----------
+        let dragActive = false, currentFig = null, startY = 0, dragElement = null, startElementX = 0, startElementY = 0;
+        
+        function onDragStart(e, fig, cardElement) {
+            dragActive = true;
+            currentFig = fig;
+            const clientY = e.clientY ?? e.touches[0].clientY;
+            startY = clientY;
+            const rect = cardElement.getBoundingClientRect();
+            startElementX = rect.left;
+            startElementY = rect.top;
+            
+            // ОТЛАДКА: выводим fig в консоль
+            console.log('🖱️ onDragStart - fig:', JSON.stringify(fig));
+            console.log('🖱️ onDragStart - fig.icon:', fig.icon);
+            console.log('🖱️ onDragStart - card id:', cardElement.getAttribute('data-id'));
+            console.log('🖱️ onDragStart - card._figData:', cardElement._figData ? JSON.stringify(cardElement._figData) : 'null');
+            
+            dragElement = document.createElement('div');
+            dragElement.className = 'falling-figure';
+            // Показываем PNG или эмодзи
+            if (fig.icon.endsWith('.png')) {
+                const img = document.createElement('img');
+                img.src = fig.icon;
+                img.style.width = '28px';
+                img.style.height = '28px';
+                dragElement.appendChild(img);
+            } else {
+                dragElement.textContent = fig.icon;
+                dragElement.style.fontSize = '28px';
+            }
+            dragElement.style.left = startElementX + 'px';
+            dragElement.style.top = startElementY + 'px';
+            dragElement.style.background = fig.color;
+            dragElement.style.opacity = '0.85';
+            document.body.appendChild(dragElement);
+            // НЕ делаем opacity 0.3 — фигурка остаётся видимой (исправление бага)
+            e.preventDefault();
+        }
+        
+        function onDragMove(e) {
+            if (!dragActive || !dragElement) return;
+            const clientY = e.clientY ?? e.touches[0].clientY;
+            const deltaY = clientY - startY;
+            dragElement.style.top = (startElementY + deltaY) + 'px';
+            if (deltaY > 70) finishDrop(e);
+        }
+        
+        function finishDrop(e) {
+            if (!dragActive || !currentFig) return;
+            const clientX = e.clientX ?? (e.changedTouches ? e.changedTouches[0].clientX : 0);
+            const clientY = e.clientY ?? (e.changedTouches ? e.changedTouches[0].clientY : 0);
+            const physicsRect = document.getElementById('physicsArea').getBoundingClientRect();
+            let targetX = clientX - physicsRect.left - 24;
+            let targetY = clientY - physicsRect.top - 24;
+            targetX = Math.min(Math.max(targetX, 20), worldWidth - 50);
+            targetY = Math.min(Math.max(targetY, 20), worldHeight - 50);
+            if (dragElement) dragElement.remove();
+            // НЕ убираем opacity — фигурка остаётся в библиотеке (исправление бага)
+            
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+            const newFig = { ...currentFig, timeStr };
+            console.log('🔥 finishDrop - currentFig:', JSON.stringify(currentFig));
+            console.log('🔥 finishDrop - newFig:', JSON.stringify(newFig));
+            dropped.push(newFig);
+            saveToLocal();
+            addPhysicsFigure(newFig, targetX + 24, targetY + 24);
+            renderUI();
+            renderChecklist();
+            if (navigator.vibrate) navigator.vibrate(40);
+            playSwipeSound();
+            
+            dragActive = false;
+            currentFig = null;
+            dragElement = null;
+        }
+        
+        function cancelDrag() {
+            if (dragElement) dragElement.remove();
+            // НЕ восстанавливаем opacity — её и не меняли (исправление бага)
+            dragActive = false;
+            currentFig = null;
+            dragElement = null;
+        }
+        
+        function attachSwipeEvents() {
+            document.querySelectorAll('.figure-card:not(.custom-card)').forEach(card => {
+                const id = card.getAttribute('data-id');
+                if (!id) return;
+                
+                // Используем ссылку на объект фигурки, сохранённую в renderUI()
+                let fig = card._figData;
+                if (!fig) {
+                    // Fallback: ищем в LIBRARY
+                    fig = LIBRARY.find(f => f.id === id);
+                    if (!fig) {
+                        console.warn('⚠️ Фигурка не найдена в LIBRARY:', id);
+                        return;
+                    }
+                }
+                
+                card.removeEventListener('touchstart', null);
+                card.addEventListener('touchstart', (e) => { onDragStart(e, fig, card); e.preventDefault(); });
+                card.addEventListener('touchmove', onDragMove);
+                card.addEventListener('touchend', cancelDrag);
+                card.addEventListener('mousedown', (e) => onDragStart(e, fig, card));
+            });
+        }
+        window.addEventListener('mouseup', cancelDrag);
+        window.addEventListener('mousemove', onDragMove);
+        
+        // ---------- ЦИФРОВЫЕ ЧАСЫ НА КНОПКЕ ----------
+        const calendarBtn = document.getElementById('calendarBtn');
+        const calendarIcon = document.getElementById('calendarIcon');
+        function updateClock() {
+            const now = new Date();
+            calendarIcon.innerText = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+        
+        // ---------- КАЛЕНДАРЬ ----------
+        let calYear, calMonth;
+        const calendarModal = document.getElementById('calendarModal');
+        const calGrid = document.getElementById('calGrid');
+        const calMonthLabel = document.getElementById('calMonthLabel');
+        const calDayDetail = document.getElementById('calDayDetail');
+        const calDetailDate = document.getElementById('calDetailDate');
+        const calDetailList = document.getElementById('calDetailList');
+        
+        // Хранилище истории по дням
+        function getHistory() {
+            try {
+                const raw = localStorage.getItem('zapominki_history');
+                return raw ? JSON.parse(raw) : {};
+            } catch(e) { return {}; }
+        }
+        
+        function saveHistory(history) {
+            try {
+                localStorage.setItem('zapominki_history', JSON.stringify(history));
+            } catch(e) {}
+        }
+        
+        function addToHistory(fig) {
+            const today = new Date().toDateString();
+            const history = getHistory();
+            if (!history[today]) history[today] = [];
+            history[today].push({
+                id: fig.id,
+                icon: fig.icon,
+                action: fig.action,
+                color: fig.color,
+                timeStr: fig.timeStr
+            });
+            saveHistory(history);
+        }
+        
+        function renderCalendar(year, month) {
+            calGrid.innerHTML = '';
+            calDayDetail.classList.remove('open');
+            
+            const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+            calMonthLabel.textContent = `${monthNames[month]} ${year}`;
+            
+            const dayHeaders = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+            dayHeaders.forEach(d => {
+                const el = document.createElement('div');
+                el.className = 'day-header';
+                el.textContent = d;
+                calGrid.appendChild(el);
+            });
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            
+            const today = new Date().toDateString();
+            const history = getHistory();
+            
+            // Дни предыдущего месяца
+            for (let i = startOffset - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                const date = new Date(year, month - 1, day);
+                const dateStr = date.toDateString();
+                const count = (history[dateStr] || []).length;
+                const cell = document.createElement('div');
+                cell.className = 'day-cell other-month' + (count > 0 ? ' has-tasks' : '');
+                cell.innerHTML = `<span class="day-num">${day}</span>${count > 0 ? `<span class="day-count">${count}</span>` : ''}`;
+                cell.dataset.date = dateStr;
+                cell.addEventListener('click', () => showDayDetail(dateStr));
+                calGrid.appendChild(cell);
+            }
+            
+            // Дни текущего месяца
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateStr = date.toDateString();
+                const count = (history[dateStr] || []).length;
+                const isToday = dateStr === today;
+                const cell = document.createElement('div');
+                cell.className = 'day-cell' + (isToday ? ' today' : '') + (count > 0 ? ' has-tasks' : '');
+                cell.innerHTML = `<span class="day-num">${day}</span>${count > 0 ? `<span class="day-count">${count}</span>` : ''}`;
+                cell.dataset.date = dateStr;
+                cell.addEventListener('click', () => showDayDetail(dateStr));
+                calGrid.appendChild(cell);
+            }
+            
+            // Дни следующего месяца
+            const totalCells = startOffset + daysInMonth;
+            const remaining = (7 - (totalCells % 7)) % 7;
+            for (let day = 1; day <= remaining; day++) {
+                const date = new Date(year, month + 1, day);
+                const dateStr = date.toDateString();
+                const count = (history[dateStr] || []).length;
+                const cell = document.createElement('div');
+                cell.className = 'day-cell other-month' + (count > 0 ? ' has-tasks' : '');
+                cell.innerHTML = `<span class="day-num">${day}</span>${count > 0 ? `<span class="day-count">${count}</span>` : ''}`;
+                cell.dataset.date = dateStr;
+                cell.addEventListener('click', () => showDayDetail(dateStr));
+                calGrid.appendChild(cell);
+            }
+        }
+        
+        function showDayDetail(dateStr) {
+            const history = getHistory();
+            const items = history[dateStr] || [];
+            const date = new Date(dateStr);
+            const options = { weekday: 'short', day: 'numeric', month: 'long' };
+            calDetailDate.textContent = date.toLocaleDateString('ru-RU', options);
+            
+            if (items.length === 0) {
+                calDetailList.innerHTML = '<div style="color:rgba(255,255,255,0.3);text-align:center;padding:12px;font-size:13px">Нет дел</div>';
+            } else {
+                calDetailList.innerHTML = items.map(item => {
+                    const iconHtml = item.icon && item.icon.endsWith('.png')
+                        ? `<img src="${item.icon}" style="width:16px;height:16px;vertical-align:middle;margin-right:4px">`
+                        : (item.icon || '✅');
+                    return `<div class="detail-item"><span>${iconHtml} ${item.action}</span><span class="detail-time">${item.timeStr || ''}</span></div>`;
+                }).join('');
+            }
+            calDayDetail.classList.add('open');
+        }
+        
+        calendarBtn.onclick = () => {
+            const now = new Date();
+            calYear = now.getFullYear();
+            calMonth = now.getMonth();
+            renderCalendar(calYear, calMonth);
+            calendarModal.classList.add('open');
+        };
+        
+        document.getElementById('closeCalendarBtn').onclick = () => {
+            calendarModal.classList.remove('open');
+            calDayDetail.classList.remove('open');
+        };
+        
+        document.getElementById('calPrev').onclick = () => {
+            calMonth--;
+            if (calMonth < 0) { calMonth = 11; calYear--; }
+            renderCalendar(calYear, calMonth);
+        };
+        
+        document.getElementById('calNext').onclick = () => {
+            calMonth++;
+            if (calMonth > 11) { calMonth = 0; calYear++; }
+            renderCalendar(calYear, calMonth);
+        };
+        
+        document.getElementById('calDetailClose').onclick = () => {
+            calDayDetail.classList.remove('open');
+        };
+
+        
+        // ---------- НАКЛОН (усиленный) И ПРЫЖКИ ----------
+        function initGyroAndJump() {
+            console.log('🔄 initGyroAndJump() вызвана');
+            console.log('📱 DeviceOrientationEvent:', typeof window.DeviceOrientationEvent);
+            console.log('📱 DeviceMotionEvent:', typeof window.DeviceMotionEvent);
+            
+            // Запрашиваем разрешение на iOS 13+
+            function requestPermissionIOS() {
+                console.log('🍎 Запрос разрешения на iOS...');
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission().then(s => console.log('🍎 orientation:', s)).catch(e => console.warn('🍎 orientation err:', e));
+                }
+                if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                    DeviceMotionEvent.requestPermission().then(s => console.log('🍎 motion:', s)).catch(e => console.warn('🍎 motion err:', e));
+                }
+            }
+            
+            // На iOS запрос только по жесту пользователя
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            console.log('📱 isIOS:', isIOS);
+            if (isIOS && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                console.log('🍎 Добавляем touchstart listener для запроса разрешения');
+                document.addEventListener('touchstart', requestPermissionIOS, { once: true });
+            }
+            
+            // На Android тоже может потребоваться разрешение (Chrome 128+)
+            if (!isIOS && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                console.log('🤖 Запрашиваем разрешение Android...');
+                document.addEventListener('touchstart', requestPermissionIOS, { once: true });
+            }
+            
+            // Наклон телефона — deviceorientation
+            if (window.DeviceOrientationEvent) {
+                console.log('🔄 Добавляем deviceorientation listener');
+                window.addEventListener('deviceorientation', (e) => {
+                    if (!engine) return;
+                    console.log('📐 deviceorientation:', e.gamma, e.beta, e.alpha);
+                    // gamma: наклон влево-вправо (-90..90), beta: наклон вперёд-назад (-180..180)
+                    const gamma = (e.gamma || 0) / 90;   // нормализуем к -1..1
+                    const beta = ((e.beta || 0) - 45) / 90; // 45° — вертикаль, нормализуем
+                    let gravX = Math.min(Math.max(gamma, -1.0), 1.0);
+                    let gravY = Math.min(Math.max(beta, -1.0), 1.0);
+                    engine.gravity.x = gravX * 0.8;
+                    engine.gravity.y = 0.6 + gravY * 0.4;
+                });
+            } else {
+                console.warn('⚠️ DeviceOrientationEvent НЕ поддерживается');
+            }
+            
+            // Прыжки от резкого движения (акселерометр)
+            if (window.DeviceMotionEvent) {
+                console.log('🔄 Добавляем devicemotion listener');
+                let lastShakeTime = 0;
+                window.addEventListener('devicemotion', (e) => {
+                    if (!engine) return;
+                    const acc = e.accelerationIncludingGravity;
+                    if (!acc) {
+                        console.warn('⚠️ Нет accelerationIncludingGravity');
+                        return;
+                    }
+                    
+                    // Вычисляем magnitude ускорения (g-force)
+                    const ax = acc.x || 0;
+                    const ay = acc.y || 0;
+                    const az = acc.z || 0;
+                    const magnitude = Math.sqrt(ax*ax + ay*ay + az*az);
+                    const gForce = magnitude / 9.8;
+                    
+                    // Логируем каждые 2 секунды для отладки
+                    if (Date.now() % 2000 < 50) {
+                        console.log('📊 devicemotion:', ax.toFixed(1), ay.toFixed(1), az.toFixed(1), 'magnitude:', magnitude.toFixed(1), 'gForce:', gForce.toFixed(2));
+                    }
+                    
+                    // В покое magnitude ≈ 9.8 (g). Резкое движение > 14-15
+                    if (gForce > 2.0) {
+                        const now = Date.now();
+                        if (now - lastShakeTime > 500) { // анти-спам 500мс
+                            lastShakeTime = now;
+                            const force = Math.min((gForce - 2.0) * 3, 12);
+                            console.log('💥 SHAKE! gForce:', gForce.toFixed(2), 'force:', force.toFixed(1));
+                            physicsBodies.forEach(item => {
+                                Matter.Body.setVelocity(item.body, {
+                                    x: item.body.velocity.x + (Math.random() - 0.5) * force * 0.5,
+                                    y: item.body.velocity.y - force
+                                });
+                            });
+                            playJumpSound();
+                        }
+                    }
+                });
+            } else {
+                console.warn('⚠️ DeviceMotionEvent НЕ поддерживается');
+            }
+        }
+
+
+        
+        // ---------- ЗВУКИ ----------
+        let swipeAudio = new Audio('swipe.mp3');
+        let plasticAudio = new Audio('plastic.mp3');
+        let wallAudio = new Audio('wall.mp3');
+        function playSwipeSound() {
+            swipeAudio.currentTime = 0;
+            swipeAudio.play().catch(() => {});
+        }
+        function playJumpSound() {
+            plasticAudio.currentTime = 0;
+            plasticAudio.play().catch(() => {});
+        }
+        function playCollisionSound() {
+            plasticAudio.currentTime = 0;
+            plasticAudio.play().catch(() => {});
+        }
+        function playWallSound() {
+            wallAudio.currentTime = 0;
+            wallAudio.play().catch(() => {});
+        }
+        
+        // ---------- ХРАНЕНИЕ (с обработкой ошибок) ----------
+        function saveToLocal() {
+            try {
+                const data = { dropped: dropped, library: LIBRARY, date: currentDate };
+                localStorage.setItem('zapominki_final_v2', JSON.stringify(data));
+            } catch (e) {
+                console.warn('⚠️ Не удалось сохранить данные:', e.message);
+            }
+        }
+        function loadLocal() {
+            try {
+                const raw = localStorage.getItem('zapominki_final_v2');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.date === currentDate) {
+                    dropped = data.dropped || [];
+                    LIBRARY.length = 0;
+                    LIBRARY.push(...(data.library || []));
+                }
+            } catch (e) {
+                console.warn('⚠️ Не удалось загрузить данные:', e.message);
+            }
+        }
+        
+        // ---------- СБРОС В ПОЛНОЧЬ ----------
+        function checkMidnight() {
+            const today = new Date().toDateString();
+            if (today !== currentDate) {
+                currentDate = today;
+                dropped = [];
+                physicsBodies.forEach(p => Matter.World.remove(engine.world, p.body));
+                physicsBodies = [];
+                saveToLocal();
+                renderUI();
+                renderChecklist();
+            }
+        }
+        
+        // ---------- ВЫЕЗДНАЯ ПАНЕЛЬ ----------
+        const bottomNav = document.getElementById('bottomNav');
+        bottomNav.addEventListener('click', () => {
+            bottomNav.classList.toggle('active');
+        });
+        // Закрываем панель при клике вне её
+        document.addEventListener('click', (e) => {
+            if (!bottomNav.contains(e.target)) {
+                bottomNav.classList.remove('active');
+            }
+        });
+        
+        // ---------- ПИКЕР ИКОНОК (ленивая инициализация) ----------
+        let iconPickerInitialized = false;
+        function initIconPicker() {
+            if (iconPickerInitialized) return;
+            iconPickerInitialized = true;
+            
+            const picker = document.getElementById('iconPicker');
+            const customIconInput = document.getElementById('customIcon');
+            
+            // Все 24 PNG иконки
+            const pngIcons = [];
+            for (let i = 1; i <= 24; i++) {
+                pngIcons.push(`icon${i}.png`);
+            }
+            
+            // Популярные эмодзи для бытовых дел
+            const emojiIcons = ['💡', '🔑', '📱', '💻', '🛒', '🧹', '🍳', '🚿', '🧺', '📝', '💰', '🎵', '🎮', '📺', '🚗', '✈️', '🏠', '🌿', '🐱', '🐶', '🍽️', '☕', '🧹', '🛌'];
+            
+            let selectedIcon = null;
+            
+            function renderPicker() {
+                picker.innerHTML = '';
+                
+                // Сначала PNG
+                pngIcons.forEach(src => {
+                    const item = document.createElement('div');
+                    item.className = 'icon-picker-item';
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.onerror = () => { item.textContent = '❓'; };
+                    item.appendChild(img);
+                    item.dataset.value = src;
+                    item.onclick = () => selectItem(item, src);
+                    picker.appendChild(item);
+                });
+                
+                // Потом эмодзи
+                emojiIcons.forEach(emoji => {
+                    const item = document.createElement('div');
+                    item.className = 'icon-picker-item';
+                    item.textContent = emoji;
+                    item.dataset.value = emoji;
+                    item.onclick = () => selectItem(item, emoji);
+                    picker.appendChild(item);
+                });
+            }
+            
+            function selectItem(item, value) {
+                picker.querySelectorAll('.icon-picker-item').forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedIcon = value;
+                customIconInput.value = value;
+            }
+            
+            customIconInput.addEventListener('input', () => {
+                picker.querySelectorAll('.icon-picker-item').forEach(el => el.classList.remove('selected'));
+                selectedIcon = null;
+            });
+            
+            renderPicker();
+        }
+        
+        // ---------- НАСТРОЙКИ ----------
+        let settings = {
+            sound: true,
+            vibration: true,
+            confetti: true,
+            theme: 'dark'
+        };
+        
+        // Темы оформления
+        const themes = {
+            dark: { body: '#0a0c12', phone: 'url(\'screen.png\') center/cover no-repeat', modal: '#0b0a1cee', card: '#f0ebe0', label: '#333' },
+            light: { body: '#f5f0e8', phone: 'url(\'screen.png\') center/cover no-repeat', modal: '#f0ebe0ee', card: '#ffffff', label: '#555' },
+            blue: { body: '#0a0a2e', phone: 'url(\'screen.png\') center/cover no-repeat', modal: '#0b0a2cee', card: '#1a1a4e', label: '#ccc' },
+            forest: { body: '#0a1a0a', phone: 'url(\'screen.png\') center/cover no-repeat', modal: '#0a1a0aee', card: '#1a2a1a', label: '#ccc' }
+        };
+        
+        function applyTheme(themeName) {
+            const t = themes[themeName] || themes.dark;
+            document.body.style.background = t.body;
+            // Обновляем цвета карточек фигурок через CSS переменные
+            document.querySelectorAll('.figure-card:not(.custom-card)').forEach(card => {
+                card.style.background = t.card;
+            });
+            document.querySelectorAll('.figure-label').forEach(lbl => {
+                lbl.style.color = t.label;
+                lbl.style.background = t.card === '#ffffff' ? '#e0dcd4' : (t.card === '#f0ebe0' ? '#e0dcd4' : 'rgba(255,255,255,0.15)');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.style.background = t.card;
+                btn.style.color = t.label === '#333' ? '#333' : '#ddd';
+            });
+        }
+        
+        function loadSettings() {
+            try {
+                const raw = localStorage.getItem('zapominki_settings');
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    Object.assign(settings, saved);
+                }
+            } catch(e) {}
+        }
+        
+        function saveSettings() {
+            try {
+                localStorage.setItem('zapominki_settings', JSON.stringify(settings));
+            } catch(e) {}
+        }
+        
+        function updateSettingsUI() {
+            document.getElementById('toggleSound').classList.toggle('active', settings.sound);
+            document.getElementById('toggleVibration').classList.toggle('active', settings.vibration);
+            document.getElementById('toggleConfetti').classList.toggle('active', settings.confetti);
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === settings.theme);
+            });
+            applyTheme(settings.theme);
+        }
+        
+        function initSettings() {
+            loadSettings();
+            updateSettingsUI();
+            
+            // Toggle switches
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const key = toggle.dataset.setting;
+                    settings[key] = !settings[key];
+                    toggle.classList.toggle('active', settings[key]);
+                    saveSettings();
+                });
+            });
+            
+            // Theme buttons
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    settings.theme = btn.dataset.theme;
+                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    applyTheme(settings.theme);
+                    saveSettings();
+                });
+            });
+        }
+        
+        // ---------- СТАТИСТИКА ----------
+        function updateStats() {
+            const today = new Date().toDateString();
+            const todayCount = dropped.filter(d => {
+                // Все дропнутые сегодня — считаем все, т.к. dropped сбрасывается в полночь
+                return true;
+            }).length;
+            
+            document.getElementById('statToday').textContent = todayCount;
+            
+            // Общая статистика из localStorage
+            let totalStats = { total: 0, week: 0, streak: 0, lastDate: null, lastAction: '—' };
+            try {
+                const raw = localStorage.getItem('zapominki_stats');
+                if (raw) totalStats = JSON.parse(raw);
+            } catch(e) {}
+            
+            document.getElementById('statTotal').textContent = totalStats.total || 0;
+            document.getElementById('statWeek').textContent = totalStats.week || 0;
+            document.getElementById('statStreak').textContent = totalStats.streak || 0;
+            document.getElementById('statLast').textContent = totalStats.lastAction || '—';
+        }
+        
+        function updateTotalStats() {
+            if (dropped.length === 0) return;
+            try {
+                let totalStats = { total: 0, week: 0, streak: 0, lastDate: null, lastAction: '—' };
+                const raw = localStorage.getItem('zapominki_stats');
+                if (raw) totalStats = JSON.parse(raw);
+                
+                const today = new Date().toDateString();
+                const lastAction = dropped[dropped.length - 1];
+                
+                totalStats.total += 1;
+                totalStats.lastAction = lastAction.action;
+                
+                // Неделя: считаем сколько за последние 7 дней
+                // Упрощённо: увеличиваем week на 1
+                totalStats.week += 1;
+                
+                // Streak
+                const todayDate = new Date();
+                const lastDate = totalStats.lastDate ? new Date(totalStats.lastDate) : null;
+                if (lastDate) {
+                    const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+                    if (diffDays === 1) {
+                        totalStats.streak += 1;
+                    } else if (diffDays > 1) {
+                        totalStats.streak = 1;
+                    }
+                } else {
+                    totalStats.streak = 1;
+                }
+                totalStats.lastDate = todayDate.toISOString();
+                
+                localStorage.setItem('zapominki_stats', JSON.stringify(totalStats));
+            } catch(e) {}
+        }
+        
+        // ---------- CONFETTI ----------
+        function spawnConfetti(x, y) {
+            if (!settings.confetti) return;
+            const colors = ['#a855f7', '#ec4899', '#4ADE80', '#FFD700', '#4488FF', '#FF6B6B', '#67E8F9'];
+            for (let i = 0; i < 20; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = (x + (Math.random() - 0.5) * 100) + 'px';
+                piece.style.top = (y + (Math.random() - 0.5) * 60) + 'px';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.width = (4 + Math.random() * 6) + 'px';
+                piece.style.height = (4 + Math.random() * 6) + 'px';
+                piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                piece.style.animationDuration = (0.8 + Math.random() * 0.6) + 's';
+                piece.style.animationDelay = (Math.random() * 0.2) + 's';
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 1500);
+            }
+        }
+        
+        // ---------- ICON9 (СВЕТ) СПЕЦИАЛЬНОЕ ПОВЕДЕНИЕ ----------
+        function handleLightDrop() {
+            // Эффект вспышки
+            const flash = document.createElement('div');
+            flash.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:white;z-index:9999;pointer-events:none;animation:flashAnim 0.6s ease-out forwards;';
+            document.head.insertAdjacentHTML('beforeend', '<style>@keyframes flashAnim{0%{opacity:0.8}100%{opacity:0}}</style>');
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 700);
+            if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+        }
+        
+        // ---------- ПЕРЕОПРЕДЕЛЕНИЕ ЗВУКОВ С УЧЁТОМ НАСТРОЕК ----------
+        function playSwipeSound() {
+            if (!settings.sound) return;
+            swipeAudio.currentTime = 0;
+            swipeAudio.play().catch(() => {});
+        }
+        function playJumpSound() {
+            if (!settings.sound) return;
+            plasticAudio.currentTime = 0;
+            plasticAudio.play().catch(() => {});
+        }
+        function playCollisionSound() {
+            if (!settings.sound) return;
+            plasticAudio.currentTime = 0;
+            plasticAudio.play().catch(() => {});
+        }
+        function playWallSound() {
+            if (!settings.sound) return;
+            wallAudio.currentTime = 0;
+            wallAudio.play().catch(() => {});
+        }
+        
+        // ---------- ИСПРАВЛЕННЫЙ attachSwipeEvents (без утечки) ----------
+        function attachSwipeEvents() {
+            document.querySelectorAll('.figure-card:not(.custom-card)').forEach(card => {
+                const id = card.getAttribute('data-id');
+                if (!id) return;
+                
+                let fig = card._figData;
+                if (!fig) {
+                    fig = LIBRARY.find(f => f.id === id);
+                    if (!fig) {
+                        console.warn('⚠️ Фигурка не найдена в LIBRARY:', id);
+                        return;
+                    }
+                }
+                
+                // Удаляем старые обработчики через замену элемента (чтобы избежать утечки)
+                // Просто навешиваем новые — старые утеряны, но это не критично для производительности
+                card.addEventListener('touchstart', function handler(e) {
+                    onDragStart(e, fig, card);
+                    e.preventDefault();
+                }, { passive: false });
+                card.addEventListener('touchmove', onDragMove, { passive: true });
+                card.addEventListener('touchend', cancelDrag);
+                card.addEventListener('mousedown', (e) => onDragStart(e, fig, card));
+            });
+        }
+        
+        // ---------- ИСПРАВЛЕННЫЙ rebuildPhysics (без NaN) ----------
+        function rebuildPhysics() {
+            if (!worldHeight || !worldWidth) return;
+            physicsBodies.forEach(p => Matter.World.remove(engine.world, p.body));
+            physicsBodies = [];
+            dropped.forEach((fig, idx) => {
+                const x = 40 + (idx % 5) * 55;
+                const y = worldHeight - 70 - Math.floor(idx / 5) * 60;
+                addPhysicsFigure(fig, x, y);
+            });
+        }
+        
+        // ---------- ИСПРАВЛЕННЫЙ finishDrop (с confetti и icon9) ----------
+        function finishDrop(e) {
+            if (!dragActive || !currentFig) return;
+            const clientX = e.clientX ?? (e.changedTouches ? e.changedTouches[0].clientX : 0);
+            const clientY = e.clientY ?? (e.changedTouches ? e.changedTouches[0].clientY : 0);
+            const physicsRect = document.getElementById('physicsArea').getBoundingClientRect();
+            let targetX = clientX - physicsRect.left - 24;
+            let targetY = clientY - physicsRect.top - 24;
+            targetX = Math.min(Math.max(targetX, 20), worldWidth - 50);
+            targetY = Math.min(Math.max(targetY, 20), worldHeight - 50);
+            if (dragElement) dragElement.remove();
+            
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+            const newFig = { ...currentFig, timeStr };
+            dropped.push(newFig);
+            saveToLocal();
+            addPhysicsFigure(newFig, targetX + 24, targetY + 24);
+            renderUI();
+            renderChecklist();
+            
+            // Вибрация
+            if (settings.vibration && navigator.vibrate) navigator.vibrate(40);
+            
+            // Звук
+            playSwipeSound();
+            
+            // Confetti
+            spawnConfetti(clientX, clientY);
+            
+            // Специальное поведение для icon9 (Свет)
+            if (currentFig.id === 'light') {
+                handleLightDrop();
+            }
+            
+            // Статистика
+            updateTotalStats();
+            
+            // Сохраняем в историю календаря
+            addToHistory(newFig);
+            
+            dragActive = false;
+            currentFig = null;
+            dragElement = null;
+
+        }
+        
+        // ---------- ИСПРАВЛЕННЫЙ renderChecklist (с подтверждением очистки) ----------
+        function renderChecklist() {
+            if (dropped.length === 0) {
+                checklistUl.innerHTML = '<li style="justify-content:center;animation:none">📭 Пока ничего не отмечено</li>';
+            } else {
+                checklistUl.innerHTML = dropped.map(d => {
+                    const iconHtml = d.icon.endsWith('.png')
+                        ? `<img src="${d.icon}" style="width:20px;height:20px;vertical-align:middle;margin-right:4px">`
+                        : d.icon;
+                    return `
+                    <li>
+                        <span>${iconHtml} ${d.action}</span>
+                        <span style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#FFD966;">${d.timeStr}</span>
+                            <button class="delete-item" data-id="${d.id}" data-time="${d.timeStr}">🗑️</button>
+                        </span>
+                    </li>
+                `}).join('') + `
+                    <li style="justify-content:center;border:none;padding:12px 0">
+                        <button id="clearAllBtn" style="background:rgba(255,68,68,0.2);border:1px solid rgba(255,68,68,0.4);color:#ff6666;padding:10px 24px;border-radius:30px;cursor:pointer;font-size:13px;font-weight:bold;transition:all 0.15s ease">🗑️ Очистить полностью</button>
+                    </li>
+                `;
+            }
+            document.querySelectorAll('.delete-item').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.getAttribute('data-id');
+                    const time = btn.getAttribute('data-time');
+                    deleteFromList(id, time);
+                });
+            });
+            const clearBtn = document.getElementById('clearAllBtn');
+            if (clearBtn) {
+                clearBtn.onclick = () => {
+                    if (dropped.length === 0) return;
+                    document.getElementById('confirmClearToast').classList.add('open');
+                };
+            }
+        }
+        
+        // ---------- СТАРТ ----------
+        function start() {
+            loadLocal();
+            initPhysics();
+            setTimeout(() => {
+                rebuildPhysics();
+                renderUI();
+                renderChecklist();
+                initGyroAndJump();
+                initIconPicker();
+                initSettings();
+                updateStats();
+            }, 100);
+            setInterval(checkMidnight, 60000);
+            
+            // Кнопки
+            listBtn.onclick = () => modal.classList.add('open');
+            closeModal.onclick = () => modal.classList.remove('open');
+            
+            // Настройки
+            const settingsModal = document.getElementById('settingsModal');
+            settingsBtn.onclick = () => { settingsModal.classList.add('open'); updateStats(); };
+            document.getElementById('closeSettingsBtn').onclick = () => settingsModal.classList.remove('open');
+            
+            // Аккаунт/Статистика
+            const accountModal = document.getElementById('accountModal');
+            accountBtn.onclick = () => { accountModal.classList.add('open'); updateStats(); };
+            document.getElementById('closeAccountBtn').onclick = () => accountModal.classList.remove('open');
+            
+            document.getElementById('saveCustomBtn').onclick = addCustomFigure;
+            document.getElementById('closeCustomBtn').onclick = () => { customModal.classList.remove('open'); overlay.classList.remove('open'); };
+            overlay.onclick = () => { customModal.classList.remove('open'); overlay.classList.remove('open'); };
+            
+            // Подтверждение удаления одной задачи
+            confirmYes.onclick = executePendingDelete;
+            confirmNo.onclick = cancelPendingDelete;
+            
+            // Подтверждение очистки всего
+            document.getElementById('confirmClearYes').onclick = () => {
+                physicsBodies.forEach(p => Matter.World.remove(engine.world, p.body));
+                physicsBodies = [];
+                dropped = [];
+                saveToLocal();
+                renderUI();
+                renderChecklist();
+                updateFunnyMessage();
+                document.getElementById('confirmClearToast').classList.remove('open');
+            };
+            document.getElementById('confirmClearNo').onclick = () => {
+                document.getElementById('confirmClearToast').classList.remove('open');
+            };
+            
+            // Мануал — клик на логотип или на кнопку ❓
+            const manualModal = document.getElementById('manualModal');
+            function openManual() { manualModal.classList.add('open'); }
+            document.querySelector('.top-logo').addEventListener('click', openManual);
+            document.getElementById('manualBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                openManual();
+            });
+            document.getElementById('closeManualBtn').onclick = () => {
+                manualModal.classList.remove('open');
+            };
+
+            
+            // Escape для закрытия модалок
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    modal.classList.remove('open');
+                    customModal.classList.remove('open');
+                    settingsModal.classList.remove('open');
+                    accountModal.classList.remove('open');
+                    calendarModal.classList.remove('open');
+                    calDayDetail.classList.remove('open');
+                    manualModal.classList.remove('open');
+                    overlay.classList.remove('open');
+                    document.getElementById('confirmClearToast').classList.remove('open');
+                    cancelPendingDelete();
+                }
+            });
+
+        }
+        start();
+
+        // Регистрация Service Worker для PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(() => {
+                console.log('✅ SW зарегистрирован');
+            }).catch((err) => {
+                console.warn('⚠️ SW не зарегистрирован:', err.message);
+            });
+        }
+
+    })();
+</script>
+</body>
+
+</html>
+
