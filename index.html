@@ -412,7 +412,7 @@
     <div class="custom-modal" id="customModal">
         <h4 style="color:white;margin-bottom:4px">➕ Новая запоминашка</h4>
         <input type="color" id="customColor" value="#FFB86B" style="width:100%">
-        <input type="text" id="customAction" placeholder="Действие (напр. 'Свет выключен')">
+        <input type="text" id="customAction" placeholder="Действие (напр. 'Свет')" maxlength="10">
         <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-top:4px">Выбери иконку:</div>
         <div class="icon-picker" id="iconPicker"></div>
         <input type="text" id="customIcon" placeholder="Только 1 эмодзи (напр. 💡)" style="margin-top:4px" maxlength="2">
@@ -443,6 +443,10 @@
                 <div class="theme-btn theme-btn-blue" data-theme="blue" title="Синяя"></div>
                 <div class="theme-btn theme-btn-forest" data-theme="forest" title="Лесная"></div>
             </div>
+        </div>
+        <div class="setting-row" style="border-bottom:none;padding-bottom:4px">
+            <span class="setting-label" style="color:#ff6666"><span>🧹</span> Кастомизация</span>
+            <button id="clearCustomBtn" style="background:rgba(255,68,68,0.2);border:1px solid rgba(255,68,68,0.4);color:#ff6666;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:bold;transition:all 0.15s ease">Очистить всё</button>
         </div>
         <button class="close-settings-btn" id="closeSettingsBtn">ЗАКРЫТЬ</button>
     </div>
@@ -854,6 +858,12 @@
             // Валидация
             if (!action) {
                 document.getElementById('customAction').style.border = '2px solid #ff4444';
+                setTimeout(() => document.getElementById('customAction').style.border = 'none', 1500);
+                return;
+            }
+            if (action.length > 10) {
+                document.getElementById('customAction').style.border = '2px solid #ff4444';
+                document.getElementById('customAction').value = action.slice(0, 10);
                 setTimeout(() => document.getElementById('customAction').style.border = 'none', 1500);
                 return;
             }
@@ -1886,6 +1896,35 @@
             document.getElementById('saveCustomBtn').onclick = addCustomFigure;
             document.getElementById('closeCustomBtn').onclick = () => { customModal.classList.remove('open'); overlay.classList.remove('open'); };
             overlay.onclick = () => { customModal.classList.remove('open'); overlay.classList.remove('open'); };
+            
+            // Кнопка "Очистить кастомизацию" в настройках
+            document.getElementById('clearCustomBtn').onclick = () => {
+                // Находим все кастомные фигурки в LIBRARY
+                const customFigs = LIBRARY.filter(f => f.isCustom);
+                if (customFigs.length === 0) return;
+                
+                // Удаляем их из LIBRARY
+                customFigs.forEach(fig => {
+                    const idx = LIBRARY.findIndex(f => f.id === fig.id);
+                    if (idx !== -1) LIBRARY.splice(idx, 1);
+                    
+                    // Удаляем из dropped и physicsBodies
+                    const dropIdx = dropped.findIndex(d => d.id === fig.id);
+                    if (dropIdx !== -1) {
+                        dropped.splice(dropIdx, 1);
+                        const physIdx = physicsBodies.findIndex(p => p.figure.id === fig.id);
+                        if (physIdx !== -1) {
+                            Matter.World.remove(engine.world, physicsBodies[physIdx].body);
+                            physicsBodies.splice(physIdx, 1);
+                        }
+                    }
+                });
+                
+                saveToLocal();
+                renderUI();
+                renderChecklist();
+                updateFunnyMessage();
+            };
             
             // Подтверждение удаления одной задачи
             confirmYes.onclick = executePendingDelete;
