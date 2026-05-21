@@ -1,21 +1,21 @@
 // Service Worker для «Запоминашки» — офлайн-работа
 const CACHE_NAME = 'zapominki-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/matter.min.js',
-  '/logo.png',
-  '/logo2.png',
-  '/screen.png',
-  '/swipe.mp3',
-  '/plastic.mp3',
-  '/wall.mp3'
+  '/zapominki/',
+  '/zapominki/index.html',
+  '/zapominki/manifest.json',
+  '/zapominki/matter.min.js',
+  '/zapominki/logo.png',
+  '/zapominki/logo2.png',
+  '/zapominki/screen.png',
+  '/zapominki/swipe.mp3',
+  '/zapominki/plastic.mp3',
+  '/zapominki/wall.mp3'
 ];
 
 // Все 24 иконки
 for (let i = 1; i <= 24; i++) {
-  ASSETS.push(`/icon${i}.png`);
+  ASSETS.push(`/zapominki/icon${i}.png`);
 }
 
 // Установка — кешируем все ресурсы
@@ -61,7 +61,7 @@ self.addEventListener('fetch', (event) => {
       }).catch(() => {
         // Если нет сети и нет в кеше — возвращаем заглушку
         if (event.request.destination === 'document') {
-          return caches.match('/index.html');
+          return caches.match('/zapominki/index.html');
         }
         return new Response('', { status: 404 });
       });
