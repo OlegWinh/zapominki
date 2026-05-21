@@ -10,7 +10,8 @@ const ASSETS = [
   '/zapominki/screen.png',
   '/zapominki/swipe.mp3',
   '/zapominki/plastic.mp3',
-  '/zapominki/wall.mp3'
+  '/zapominki/wall.mp3',
+  '/zapominki/iconclean.png'
 ];
 
 // Все 24 иконки
