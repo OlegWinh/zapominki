@@ -415,7 +415,7 @@
         <input type="text" id="customAction" placeholder="Действие (напр. 'Свет выключен')">
         <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-top:4px">Выбери иконку:</div>
         <div class="icon-picker" id="iconPicker"></div>
-        <input type="text" id="customIcon" placeholder="Или введи свой эмодзи (напр. 💡)" style="margin-top:4px">
+        <input type="text" id="customIcon" placeholder="Только 1 эмодзи (напр. 💡)" style="margin-top:4px" maxlength="2">
         <button id="saveCustomBtn">Добавить</button>
         <button id="closeCustomBtn" style="background:#555">Отмена</button>
     </div>
@@ -678,6 +678,16 @@
                 ctx.drawImage(offscreen, x - size/2, y - size/2, size, size);
             }
             
+            // Кеш для iconclean.png
+            let iconCleanImg = null;
+            function getIconClean() {
+                if (!iconCleanImg) {
+                    iconCleanImg = new Image();
+                    iconCleanImg.src = 'iconclean.png';
+                }
+                return iconCleanImg;
+            }
+            
             function drawIcons() {
                 ctxIcon.clearRect(0, 0, worldWidth, worldHeight);
                 physicsBodies.forEach(({ body, figure }) => {
@@ -691,19 +701,59 @@
                     ctxIcon.translate(pos.x, pos.y);
                     ctxIcon.rotate(angle);
                     
-                    // Иконка: PNG или эмодзи
+                    // 1. Рисуем подложку (скруглённый прямоугольник цвета figure.color)
+                    const color = figure.color || '#a855f7';
+                    const radius = 10;
+                    ctxIcon.beginPath();
+                    ctxIcon.moveTo(-iconW/2 + radius, -iconH/2);
+                    ctxIcon.lineTo(iconW/2 - radius, -iconH/2);
+                    ctxIcon.quadraticCurveTo(iconW/2, -iconH/2, iconW/2, -iconH/2 + radius);
+                    ctxIcon.lineTo(iconW/2, iconH/2 - radius);
+                    ctxIcon.quadraticCurveTo(iconW/2, iconH/2, iconW/2 - radius, iconH/2);
+                    ctxIcon.lineTo(-iconW/2 + radius, iconH/2);
+                    ctxIcon.quadraticCurveTo(-iconW/2, iconH/2, -iconW/2, iconH/2 - radius);
+                    ctxIcon.lineTo(-iconW/2, -iconH/2 + radius);
+                    ctxIcon.quadraticCurveTo(-iconW/2, -iconH/2, -iconW/2 + radius, -iconH/2);
+                    ctxIcon.closePath();
+                    ctxIcon.fillStyle = color;
+                    ctxIcon.fill();
+                    // Лёгкая обводка для контраста
+                    ctxIcon.strokeStyle = 'rgba(255,255,255,0.3)';
+                    ctxIcon.lineWidth = 1.5;
+                    ctxIcon.stroke();
+                    
+                    // 2. Иконка: PNG или эмодзи
                     if (figure.icon && figure.icon.endsWith('.png')) {
-                        const img = getCachedIcon(figure.icon);
-                        if (img.complete && img.naturalWidth > 0) {
-                            ctxIcon.drawImage(img, -iconW/2, -iconH/2, iconW, iconH);
+                        // Для кастомных фигурок с PNG-иконкой используем iconclean.png как подложку
+                        // (если это iconclean.png — рисуем её, иначе обычную PNG)
+                        if (figure.icon === 'iconclean.png') {
+                            // Рисуем iconclean.png поверх цветной подложки
+                            const cleanImg = getIconClean();
+                            if (cleanImg.complete && cleanImg.naturalWidth > 0) {
+                                ctxIcon.drawImage(cleanImg, -iconW/2, -iconH/2, iconW, iconH);
+                            } else {
+                                cleanImg.onload = () => {
+                                    ctxIcon.drawImage(cleanImg, -iconW/2, -iconH/2, iconW, iconH);
+                                };
+                            }
+                            // Поверх — эмодзи (если есть)
+                            if (figure.emoji) {
+                                drawEmojiOnCanvas(ctxIcon, figure.emoji, 0, 0, 40);
+                            }
                         } else {
-                            img.onload = () => {
+                            // Обычная PNG-иконка поверх подложки
+                            const img = getCachedIcon(figure.icon);
+                            if (img.complete && img.naturalWidth > 0) {
                                 ctxIcon.drawImage(img, -iconW/2, -iconH/2, iconW, iconH);
-                            };
+                            } else {
+                                img.onload = () => {
+                                    ctxIcon.drawImage(img, -iconW/2, -iconH/2, iconW, iconH);
+                                };
+                            }
                         }
                     } else if (figure.icon) {
-                        // Эмодзи — рисуем через offscreen canvas для надёжности
-                        drawEmojiOnCanvas(ctxIcon, figure.icon, 0, 0, 48);
+                        // Эмодзи — рисуем поверх подложки
+                        drawEmojiOnCanvas(ctxIcon, figure.icon, 0, 0, 40);
                     } else {
                         // Fallback если нет иконки
                         ctxIcon.font = '28px system-ui';
@@ -811,6 +861,33 @@
                 document.getElementById('customIcon').style.border = '2px solid #ff4444';
                 setTimeout(() => document.getElementById('customIcon').style.border = 'none', 1500);
                 return;
+            }
+            // Проверка: если это не PNG (выбранный из пикера), то должен быть ровно 1 emoji-символ
+            if (!icon.endsWith('.png')) {
+                // Проверяем, что строка — это ровно 1 emoji (2 символа в JS для суррогатных пар)
+                const codePoints = [...icon];
+                if (codePoints.length > 2) {
+                    document.getElementById('customIcon').style.border = '2px solid #ff4444';
+                    document.getElementById('customIcon').value = '';
+                    document.getElementById('customIcon').placeholder = '❌ Только 1 эмодзи!';
+                    setTimeout(() => {
+                        document.getElementById('customIcon').style.border = 'none';
+                        document.getElementById('customIcon').placeholder = 'Только 1 эмодзи (напр. 💡)';
+                    }, 2000);
+                    return;
+                }
+                // Проверка, что это действительно emoji (а не буквы/цифры)
+                const emojiRegex = /^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
+                if (!emojiRegex.test(icon)) {
+                    document.getElementById('customIcon').style.border = '2px solid #ff4444';
+                    document.getElementById('customIcon').value = '';
+                    document.getElementById('customIcon').placeholder = '❌ Введи эмодзи, не текст!';
+                    setTimeout(() => {
+                        document.getElementById('customIcon').style.border = 'none';
+                        document.getElementById('customIcon').placeholder = 'Только 1 эмодзи (напр. 💡)';
+                    }, 2000);
+                    return;
+                }
             }
             
             const color = document.getElementById('customColor').value;
@@ -1266,7 +1343,8 @@
                     let gravX = Math.min(Math.max(gamma, -1.0), 1.0);
                     let gravY = Math.min(Math.max(beta, -1.0), 1.0);
                     engine.gravity.x = gravX * 0.8;
-                    engine.gravity.y = 0.6 + gravY * 0.4;
+                    // Исправлено: наклон вперёд (beta < 45) увеличивает гравитацию, назад — уменьшает
+                    engine.gravity.y = 0.6 - gravY * 0.4;
                 });
             } else {
                 console.warn('⚠️ DeviceOrientationEvent НЕ поддерживается');
