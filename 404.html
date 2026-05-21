@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Весёлые напоминалки с физикой — смахни задачу, и она упадёт!">
+    <meta name="theme-color" content="#a855f7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Запоминашки">
+    <meta name="application-name" content="Запоминашки">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>Запоминашки</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0c12; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: system-ui, sans-serif; color: white; text-align: center; padding: 20px; }
+        .container { max-width: 400px; }
+        h1 { font-size: 72px; margin-bottom: 10px; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p { font-size: 18px; color: rgba(255,255,255,0.6); margin-bottom: 30px; }
+        a { display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 16px; transition: transform 0.15s ease; }
+        a:hover { transform: scale(1.05); }
+        a:active { transform: scale(0.95); }
+        .emoji { font-size: 80px; margin-bottom: 20px; }
+    </style>
+    <script>
+        // Перенаправляем на index.html для PWA
+        window.location.replace('/zapominki/');
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🤷</div>
+        <h1>404</h1>
+        <p>Страница не найдена, но «Запоминашки» всё ещё здесь!</p>
+        <a href="/zapominki/">Вернуться</a>
+    </div>
+</body>
+</html>
